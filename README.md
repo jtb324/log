@@ -1,12 +1,9 @@
 # README for the log module: (last updated 7/26/22)
-___
 
 ## Purpose:
-___
 The purpose of the module is to provide an abstracted framework for logging that uses the python logging module. This module abstracts away so of the formatting of the logging module so that the code it is added to doesn't have to be verbose. This modules is mainly used in my personal projects and therefore the abstractions are what I find most useful. You may have to modify the code for other uses.
 
 ## Using this module:
-___
 Typically I just git clone this module into project as a submodule. You can use the command shown below:
 
 ```
@@ -20,7 +17,6 @@ git clone https://github.com/jtb324/log.git
 ```
 
 ## Important Note about allowed log levels.
-___
 This script allows three log levels: "verbose", "debug", "warning". Others can add more values to this dictionary to customize other logging levels. This values are stored as keys in a dictionary where the values are the corresponding logging integers:
 
 ```
@@ -32,7 +28,6 @@ level_dict: dict[str, int] = {
 ```
 
 ## Important functions.
-___
 **configure:**
 ```
 def configure(
