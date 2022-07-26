@@ -22,7 +22,7 @@ def record_inputs(logger, **kwargs) -> None:
     logger.setLevel(get_loglevel(kwargs["loglevel"]))
 
 
-def get_loglevel(loglevel: str):
+def get_loglevel(loglevel: str) -> int:
     """Function that will return a log level based on the input"""
 
     return level_dict[loglevel]
@@ -54,7 +54,7 @@ def configure(
     # log information to the stderr
     if to_console:
         stream_formatter = logging.Formatter("%(message)s")
-        
+
         sh = logging.StreamHandler()
         sh.setFormatter(stream_formatter)
         logger.addHandler(sh)
