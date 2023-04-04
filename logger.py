@@ -1,7 +1,8 @@
 import logging
 import os
+from typing import Dict
 
-level_dict: dict[str, int] = {
+level_dict: Dict[str, int] = {
     "verbose": logging.INFO,
     "debug": logging.DEBUG,
     "warning": logging.WARNING,
