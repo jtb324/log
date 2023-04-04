@@ -68,15 +68,15 @@ def get_logger(module_name: str, main_name: str = "__main__") -> logging.Logger:
 def create_logger(
     logger_name: str = "__main__",
 ) -> logging.Logger:
-    """function that will get the correct logger for the program
+    """Function that will get the correct logger for the program
 
     Parameters
-
+    ----------
     loglevel : str
         logging level that the user wants to use. The default level is INFO
 
     Returns
-
+    -------
     logging.Logger
     """
 
