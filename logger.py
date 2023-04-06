@@ -2,10 +2,9 @@ import logging
 import os
 from typing import Dict
 
-level_dict: Dict[str, int] = {
-    "verbose": logging.INFO,
-    "debug": logging.DEBUG,
-    "warning": logging.WARNING,
+level_dict: Dict[int, int] = {
+    1 : logging.DEBUG,
+    2 : logging.INFO,
 }
 
 
@@ -23,8 +22,22 @@ def record_inputs(logger, **kwargs) -> None:
     logger.setLevel(get_loglevel(kwargs["loglevel"]))
 
 
-def get_loglevel(loglevel: str) -> int:
-    """Function that will return a log level based on the input"""
+def get_loglevel(loglevel: int) -> int:
+    """Function that will return a log level based on the input
+    
+    Parameters
+    ----------
+    loglevel : int
+        integer that represents what loglevel the program 
+        will use. This number will be zero if the user didn't 
+        pass the verbose flag and will be 1 if the user 
+        passed the verbose flag.
+    
+    Returns
+    -------
+    int
+        returns an integer representing the loglevel in the level_dict
+    """
 
     return level_dict[loglevel]
 
@@ -33,7 +46,7 @@ def configure(
     logger: logging.Logger,
     output: str,
     filename: str = "IBDCluster.log",
-    loglevel: str = "warning",
+    loglevel: int = 0,
     to_console: bool = False,
     format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 ) -> None:
@@ -41,7 +54,7 @@ def configure(
 
     filename = os.path.join(output, filename)
 
-    logger.setLevel(level_dict.get(loglevel, logging.WARNING))
+    logger.setLevel(level_dict.get(loglevel, logging.INFO))
 
     file_formatter = logging.Formatter(format_str)
 
