@@ -3,8 +3,8 @@ import os
 from typing import Dict
 
 level_dict: Dict[int, int] = {
-    1 : logging.DEBUG,
-    2 : logging.INFO,
+    1: logging.DEBUG,
+    2: logging.INFO,
 }
 
 
@@ -24,22 +24,22 @@ def record_inputs(logger, **kwargs) -> None:
 
 def get_loglevel(loglevel: int) -> int:
     """Function that will return a log level based on the input
-    
+
     Parameters
     ----------
     loglevel : int
-        integer that represents what loglevel the program 
-        will use. This number will be zero if the user didn't 
-        pass the verbose flag and will be 1 if the user 
+        integer that represents what loglevel the program
+        will use. This number will be zero if the user didn't
+        pass the verbose flag and will be 1 if the user
         passed the verbose flag.
-    
+
     Returns
     -------
     int
         returns an integer representing the loglevel in the level_dict
     """
 
-    return level_dict[loglevel]
+    return level_dict.get(loglevel, logging.INFO)
 
 
 def configure(
