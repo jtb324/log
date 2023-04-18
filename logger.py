@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Dict
 
 level_dict: Dict[str, int] = {
@@ -31,7 +32,7 @@ def get_loglevel(loglevel: str) -> int:
 
 def configure(
     logger: logging.Logger,
-    output: str,
+    output: Path,
     filename: str = "IBDCluster.log",
     loglevel: str = "warning",
     to_console: bool = False,
@@ -39,7 +40,7 @@ def configure(
 ) -> None:
     """Function that will configure the level of logging"""
 
-    filename = os.path.join(output, filename)
+    filename = output / filename
 
     logger.setLevel(level_dict.get(loglevel, logging.WARNING))
 
