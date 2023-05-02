@@ -80,9 +80,7 @@ def get_logger(module_name: str, main_name: str = "__main__") -> logging.Logger:
     return logging.getLogger(main_name).getChild(module_name)
 
 
-def create_logger(
-    logger_name: str = "__main__",
-) -> logging.Logger:
+def create_logger(logger_name: str = "__main__",) -> logging.Logger:
     """Function that will get the correct logger for the program
 
     Parameters
