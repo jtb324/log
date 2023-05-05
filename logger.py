@@ -52,7 +52,7 @@ class CustomLogger(logging.getLoggerClass()):
             self.info(f"{parameter}: {value}")
 
         # getting the correct log level to reset the logger
-        self.setLevel(CustomLogger.get_loglevel(kwargs["loglevel"]))
+        self.setLevel(self.getEffectiveLevel())
 
     @staticmethod
     def get_loglevel(loglevel: int) -> int:
