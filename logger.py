@@ -44,6 +44,7 @@ class CustomLogger(logging.getLoggerClass()):
         ----------
         logger : logging.Logger"""
 
+        current_level = self.getEffectiveLevel()
         # changing the loglevel so that it records the info messages here
         self.setLevel(logging.INFO)
 
@@ -52,7 +53,7 @@ class CustomLogger(logging.getLoggerClass()):
             self.info(f"{parameter}: {value}")
 
         # getting the correct log level to reset the logger
-        self.setLevel(self.getEffectiveLevel())
+        self.setLevel(current_level)
 
     @staticmethod
     def get_loglevel(loglevel: int) -> int:
