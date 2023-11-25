@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from typing import Any, Dict
+from argparse import Namespace
 
 # We are going to configure a specific logging level for
 # VERBOSE versus INFO
@@ -34,6 +35,27 @@ class CustomLogger(logging.getLoggerClass()):
         """
         if self.isEnabledFor(logging.VERBOSE):
             self._log(logging.VERBOSE, msg, args, **kwargs)
+
+    def record_namespace(self, inputs: Namespace) -> None:
+        """log the user arguments from the argparse Namespace
+
+        Parameters
+        ----------
+        inputs : Namespace
+            Namespace object that has all of the arguments passed to Argparse parser
+        """
+        argument_dictionary = vars(inputs)
+
+        current_level = self.getEffectiveLevel()
+        # changing the loglevel so that it records the info messages here
+        self.setLevel(logging.INFO)
+
+        # going over each value in the kwargs to write to a file
+        for parameter, value in argument_dictionary.items():
+            self.info(f"{parameter}: {value}")
+
+        # getting the correct log level to reset the logger
+        self.setLevel(current_level)
 
     def record_inputs(self, **kwargs: Dict[str, Any]) -> None:
         """function to record the user arguments that were passed to the
