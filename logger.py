@@ -1,7 +1,7 @@
 import logging
+from argparse import Namespace
 from pathlib import Path
 from typing import Any, Dict
-from argparse import Namespace
 
 # We are going to configure a specific logging level for
 # VERBOSE versus INFO
