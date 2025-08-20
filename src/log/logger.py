@@ -1,7 +1,7 @@
 import logging
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 # We are going to configure a specific logging level for
 # VERBOSE versus INFO
@@ -104,7 +104,7 @@ class CustomLogger(logging.getLoggerClass()):
     def configure(
         self,
         output: Path,
-        filename: str = "test.log",
+        filename: Union[str, None] = "test.log",
         verbosity: int = 0,
         to_console: bool = False,
         format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -114,7 +114,9 @@ class CustomLogger(logging.getLoggerClass()):
         Parameters
         ----------
         logger"""
-        if filename is None:
+        if (
+            filename is None
+        ):  # If there is no filename provided then we are going to assume that the user only wants to write to STDOUT
             to_console = True
 
         if filename:
