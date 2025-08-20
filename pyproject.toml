@@ -1,14 +1,12 @@
 [project]
 name = "modified-logger"
-version = "1.0.0"
+version = "1.1.0"
 description = "Personal logging abstract from python's logging library that fits my needs"
-authors = [
-    {name = "James Baker", email = "james.baker@vanderbilt.edu"},
-]
+authors = [{ name = "James Baker", email = "james.baker@vanderbilt.edu" }]
 dependencies = []
 requires-python = ">=3.8"
 readme = "README.md"
-license = {text = "Apache-2.0"}
+license = { text = "Apache-2.0" }
 
 [build-system]
 requires = ["pdm-backend"]

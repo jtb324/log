@@ -114,18 +114,21 @@ class CustomLogger(logging.getLoggerClass()):
         Parameters
         ----------
         logger"""
+        if filename is None:
+            to_console = True
 
-        filename = output / filename
+        if filename:
+            filename = output / filename
 
-        self.setLevel(CustomLogger.get_loglevel(verbosity))
+            self.setLevel(CustomLogger.get_loglevel(verbosity))
 
-        file_formatter = logging.Formatter(format_str)
+            file_formatter = logging.Formatter(format_str)
 
-        # program defaults to log to a file called IBDCluster.log in the
-        # output directory
-        fh = logging.FileHandler(filename, mode="w")
-        fh.setFormatter(file_formatter)
-        self.addHandler(fh)
+            # program defaults to log to a file called IBDCluster.log in the
+            # output directory
+            fh = logging.FileHandler(filename, mode="w")
+            fh.setFormatter(file_formatter)
+            self.addHandler(fh)
 
         # If the user selects to also log to console then the program will
         # log information to the stderr
