@@ -51,12 +51,12 @@ class CustomLogger(logging.getLoggerClass()):
         self.setLevel(logging.INFO)
 
         self.info("Program Arguments in NameSpace:")
-        self.info("~*30")
+        self.info(f"{'~' * 30}")
         # going over each value in the kwargs to write to a file
         for parameter, value in argument_dictionary.items():
             self.info(f"{parameter}: {value}")
 
-        self.info("~*30")
+        self.info(f"{'~' * 30}")
         self.info("\n")
         # getting the correct log level to reset the logger
         self.setLevel(current_level)
