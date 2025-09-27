@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from argparse import Namespace
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -8,7 +9,102 @@ from typing import Any, Dict, Union
 logging.VERBOSE = logging.INFO - 5
 
 
-class CustomLogger(logging.getLoggerClass()):
+class LoggerOpts:
+
+    def __init__(self, to_console: bool = False, verbosity: int = 0) -> None:
+        self.to_console = to_console
+        self.verbosity = verbosity
+
+
+class HandlerOpts:
+
+    def __init__(
+        self,
+        filename: str = "test.log",
+        output_dir: Path = Path("./"),
+        rotate_handle: bool = False,
+        max_size: int = 1024,
+        backup_filecount: int = 5,
+    ) -> None:
+        """container for all of the options that get passed to the handler
+
+        Parameters
+        ----------
+        filename : str
+            the name of the output file. This value is just the name not
+            the full path including the directory. Default value: test.log
+
+        output_dir : Path
+            path to the output directory that the log will be written to.
+            Default value: Path("./")
+
+        rotate_handle : bool
+            whether or not to use a rotatingFileHandle. If true then the
+            logger will close the existing filehandle and start a new one
+            once the file gets to be a  certain size. Default value: False
+
+        max_size : int
+            max_size for the log file to be before the logger will close the
+            file and start logging to a new file. Values are in bytes. Default
+            value: 1024
+
+        backup_filecount: int
+            number of log files to keep as backups. If the program reaches the
+            backup_filecount then it deletes the oldest log. Default value: 5
+        Raises
+        ------
+        ValueError
+            if the output directory doesn't exist then the program throws
+            a ValueError
+        """
+        self.filename = filename
+        if not output_dir.exists():
+            raise ValueError(f"The directory {output_dir} was not found")
+        self.output_dir = output_dir
+        self.use_rotating_handle = rotate_handle
+        self.max_size = max_size
+        self.backup_filecount = backup_filecount
+
+
+class FormatterOpts:
+
+    def __init__(self) -> None:
+        self.format_strings: Dict[str, str | None] = {
+            "file_format": None,
+            "stream_format": None,
+        }
+
+    def add_format(self, format_str: str, handler_name: str) -> None:
+        """add the formatting string to the FormatterOpts
+
+        Parameters
+        ----------
+        format_str : str
+            string that will be passed to the handler to indicate how
+            the log file should write the record
+
+        handler_name : str
+            which handler the formatter string should go to. Allowed values are 'file' or 'stream'
+
+        Raises
+        ------
+        ValueError
+            if the handler name is not one of the allowed values then the program throws a ValueError
+            that informs the user what the allowed values are
+        """
+        if handler_name not in ["file", "stream"]:
+            raise ValueError(
+                f"Unrecognized handler name: {handler_name}. Allowed values are 'file' or 'stream'"
+            )
+
+        match handler_name:
+            case "file":
+                self.format_strings["file_format"] = format_str
+            case "stream":
+                self.format_strings["stream"] = format_str
+
+
+class ModifiedLogger(logging.getLoggerClass()):
     def __init__(self, name: str, level: int = logging.NOTSET) -> None:
         """Initialize the CustomLogger class
 
@@ -32,6 +128,14 @@ class CustomLogger(logging.getLoggerClass()):
         ----------
         msg : str
             message provided to the logger
+
+        args : list[Any]
+            list of additional arguments supplied to the function
+            (not keyword arguments)
+
+        kwargs : dict[str, Any]
+            dictionary containing additional keyword arguments
+            passed to the function
         """
         if self.isEnabledFor(logging.VERBOSE):
             self._log(logging.VERBOSE, msg, args, **kwargs)
@@ -107,38 +211,62 @@ class CustomLogger(logging.getLoggerClass()):
 
     def configure(
         self,
-        output: Path,
-        filename: Union[str, None] = "test.log",
-        verbosity: int = 0,
-        to_console: bool = False,
-        format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlerOpts: HandlerOpts,
+        loggerOpts: LoggerOpts,
+        formatterOpts: FormatterOpts,
+        # format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     ) -> None:
-        """Function that will configure the logger
+        """configure the logger by setting information about whether to write
+        only to a file or also a stream, whether to use any sampling approaches
+        to limit logger output, and how to format the output strings.
 
         Parameters
         ----------
-        logger"""
+        handlerOpts : HandlerOpts
+            data container providing information about output filename, output directory,
+            whether to rotate logfiles, max size of the file, and the number of backup
+            files to keep
+
+        loggerOpts : LoggerOpts
+            data container providing information about whether or not to log information
+            to the console and what verbosity the logger should use
+
+        formatterOpts : FormatterOpts
+            data container providing information about the format string for the log
+            records
+        """
         if (
-            filename is None
+            handlerOpts.filename is None
         ):  # If there is no filename provided then we are going to assume that the user only wants to write to STDOUT
-            to_console = True
+            loggerOpts.to_console = True
 
-        if filename:
-            filename = output / filename
+        # If there is a filename then we have to configure everything like verbosity, format, and the handler
+        if handlerOpts.filename:
+            filename = handlerOpts.output_dir / handlerOpts.filename
 
-            self.setLevel(CustomLogger.get_loglevel(verbosity))
+            self.setLevel(ModifiedLogger.get_loglevel(loggerOpts.verbosity))
 
-            file_formatter = logging.Formatter(format_str)
+            file_formatter = logging.Formatter(
+                formatterOpts.format_strings["file_format"]
+            )
 
-            # program defaults to log to a file called IBDCluster.log in the
-            # output directory
-            fh = logging.FileHandler(filename, mode="w")
+            if handlerOpts.use_rotating_handle:
+                fh = RotatingFileHandler(
+                    filename,
+                    mode="w",
+                    maxBytes=handlerOpts.max_size,
+                    backupCount=handlerOpts.backup_filecount,
+                    errors="replace",
+                )
+            else:
+                fh = logging.FileHandler(filename, mode="w", errors="replace")
+
             fh.setFormatter(file_formatter)
             self.addHandler(fh)
 
         # If the user selects to also log to console then the program will
         # log information to the stderr
-        if to_console:
+        if loggerOpts.to_console:
             stream_formatter = logging.Formatter("%(message)s")
 
             sh = logging.StreamHandler()
@@ -171,4 +299,4 @@ class CustomLogger(logging.getLoggerClass()):
         return logger
 
 
-logging.setLoggerClass(CustomLogger)
+logging.setLoggerClass(ModifiedLogger)

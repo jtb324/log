@@ -1,1 +1,1 @@
-from .logger import CustomLogger
+from .logger import ModifiedLogger, HandlerOpts, FormatterOpts, LoggerOpts
