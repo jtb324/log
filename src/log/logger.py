@@ -103,7 +103,7 @@ class FormatterOpts:
                 self.format_strings["stream"] = format_str
 
 
-class CustomLogger(logging.getLoggerClass()):
+class ModifiedLogger(logging.getLoggerClass()):
     def __init__(self, name: str, level: int = logging.NOTSET) -> None:
         """Initialize the CustomLogger class
 
@@ -127,6 +127,14 @@ class CustomLogger(logging.getLoggerClass()):
         ----------
         msg : str
             message provided to the logger
+
+        args : list[Any]
+            list of additional arguments supplied to the function
+            (not keyword arguments)
+
+        kwargs : dict[str, Any]
+            dictionary containing additional keyword arguments
+            passed to the function
         """
         if self.isEnabledFor(logging.VERBOSE):
             self._log(logging.VERBOSE, msg, args, **kwargs)
@@ -205,24 +213,40 @@ class CustomLogger(logging.getLoggerClass()):
         handlerOpts: HandlerOpts,
         loggerOpts: LoggerOpts,
         formatterOpts: FormatterOpts,
-        format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        # format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     ) -> None:
-        """Function that will configure the logger
+        """configure the logger by setting information about whether to write
+        only to a file or also a stream, whether to use any sampling approaches
+        to limit logger output, and how to format the output strings.
 
         Parameters
         ----------
-        logger"""
+        handlerOpts : HandlerOpts
+            data container providing information about output filename, output directory,
+            whether to rotate logfiles, max size of the file, and the number of backup
+            files to keep
+
+        loggerOpts : LoggerOpts
+            data container providing information about whether or not to log information
+            to the console and what verbosity the logger should use
+
+        formatterOpts : FormatterOpts
+            data container providing information about the format string for the log
+            records
+        """
         if (
             handlerOpts.filename is None
         ):  # If there is no filename provided then we are going to assume that the user only wants to write to STDOUT
-            to_console = True
+            loggerOpts.to_console = True
 
         if handlerOpts.filename:
             filename = handlerOpts.output_dir / handlerOpts.filename
 
-            self.setLevel(CustomLogger.get_loglevel(loggerOpts.verbosity))
+            self.setLevel(ModifiedLogger.get_loglevel(loggerOpts.verbosity))
 
-            file_formatter = logging.Formatter(format_str)
+            file_formatter = logging.Formatter(
+                formatterOpts.format_strings["file_format"]
+            )
 
             # program defaults to log to a file called IBDCluster.log in the
             # output directory
@@ -265,4 +289,4 @@ class CustomLogger(logging.getLoggerClass()):
         return logger
 
 
-logging.setLoggerClass(CustomLogger)
+logging.setLoggerClass(ModifiedLogger)
