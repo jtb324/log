@@ -20,11 +20,19 @@ User can install the logger using the following code:
 
 
 
-
+  
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started
    :hidden:
 
    installation
+   examples
+
+.. toctree::
+   :maxdepth: 2 
+   :caption: API
+   :hidden:
+
+   api
 
