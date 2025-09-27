@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from argparse import Namespace
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -239,6 +240,7 @@ class ModifiedLogger(logging.getLoggerClass()):
         ):  # If there is no filename provided then we are going to assume that the user only wants to write to STDOUT
             loggerOpts.to_console = True
 
+        # If there is a filename then we have to configure everything like verbosity, format, and the handler
         if handlerOpts.filename:
             filename = handlerOpts.output_dir / handlerOpts.filename
 
@@ -248,9 +250,17 @@ class ModifiedLogger(logging.getLoggerClass()):
                 formatterOpts.format_strings["file_format"]
             )
 
-            # program defaults to log to a file called IBDCluster.log in the
-            # output directory
-            fh = logging.FileHandler(filename, mode="w")
+            if handlerOpts.use_rotating_handle:
+                fh = RotatingFileHandler(
+                    filename,
+                    mode="w",
+                    maxBytes=handlerOpts.max_size,
+                    backupCount=handlerOpts.backup_filecount,
+                    errors="replace",
+                )
+            else:
+                fh = logging.FileHandler(filename, mode="w", errors="replace")
+
             fh.setFormatter(file_formatter)
             self.addHandler(fh)
 
