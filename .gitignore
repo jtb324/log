@@ -4,4 +4,7 @@ __pycache__/
 
 .pdm-python
 
+# build directories
 dist/
+build/
+
