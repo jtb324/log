@@ -2,7 +2,11 @@ import logging
 from logging.handlers import RotatingFileHandler
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict
+from typing_extensions import Self
+
+from log.formatters.json_formatter import JsonFormatter
+
 
 # We are going to configure a specific logging level for
 # VERBOSE versus INFO
@@ -68,14 +72,18 @@ class HandlerOpts:
 
 class FormatterOpts:
 
-    def __init__(self) -> None:
+    def __init__(self, write_json: bool = False) -> None:
+        self.write_json = write_json  # Whether or not to write the log file as json
         self.format_strings: Dict[str, str | None] = {
-            "file_format": None,
-            "stream_format": None,
+            "file_format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            "stream_format": "%(message)s",
         }
 
-    def add_format(self, format_str: str, handler_name: str) -> None:
-        """add the formatting string to the FormatterOpts
+    def add_format(self, format_str: str, handler_name: str) -> Self:
+        """add the formatting string to the FormatterOpts. This method is used
+        for only the output going to the stream and to a file. If the user is
+        using the JsonFormatter then any values passed to this method will be
+        ignored
 
         Parameters
         ----------
@@ -102,6 +110,8 @@ class FormatterOpts:
                 self.format_strings["file_format"] = format_str
             case "stream":
                 self.format_strings["stream"] = format_str
+
+        return self
 
 
 class ModifiedLogger(logging.getLoggerClass()):
@@ -246,9 +256,13 @@ class ModifiedLogger(logging.getLoggerClass()):
 
             self.setLevel(ModifiedLogger.get_loglevel(loggerOpts.verbosity))
 
-            file_formatter = logging.Formatter(
-                formatterOpts.format_strings["file_format"]
-            )
+            # The user can choose to write json logs as json files if that is more appropriate for them
+            if formatterOpts.write_json:
+                file_formatter = JsonFormatter()
+            else:
+                file_formatter = logging.Formatter(
+                    formatterOpts.format_strings["file_format"]
+                )
 
             if handlerOpts.use_rotating_handle:
                 fh = RotatingFileHandler(
@@ -267,7 +281,7 @@ class ModifiedLogger(logging.getLoggerClass()):
         # If the user selects to also log to console then the program will
         # log information to the stderr
         if loggerOpts.to_console:
-            stream_formatter = logging.Formatter("%(message)s")
+            stream_formatter = logging.Formatter(formatterOpts.format_strings["stream"])
 
             sh = logging.StreamHandler()
             sh.setFormatter(stream_formatter)
