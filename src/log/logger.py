@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from argparse import Namespace
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, MutableMapping
 from typing_extensions import Self
 
 from log.formatters.json_formatter import JsonFormatter
@@ -11,6 +11,21 @@ from log.formatters.json_formatter import JsonFormatter
 # We are going to configure a specific logging level for
 # VERBOSE versus INFO
 logging.VERBOSE = logging.INFO - 5
+
+
+class ModifiedLogAdapter(logging.LoggerAdapter):
+
+    def process(self, msg, kwargs) -> tuple[str, MutableMapping]:
+        super_class_context = self.extra.copy()
+
+        provided_context = kwargs.get("extra")
+
+        if isinstance(provided_context, dict):
+            super_class_context |= provided_context
+
+        kwargs["extra"] = super_class_context
+
+        return msg, kwargs
 
 
 class LoggerOpts:
@@ -114,7 +129,7 @@ class FormatterOpts:
         return self
 
 
-class ModifiedLogger(logging.getLoggerClass()):
+class ModifiedLogger(logging.Logger):
     def __init__(self, name: str, level: int = logging.NOTSET) -> None:
         """Initialize the CustomLogger class
 
@@ -197,7 +212,11 @@ class ModifiedLogger(logging.getLoggerClass()):
 
     @staticmethod
     def get_loglevel(loglevel: int) -> int:
-        """Function that will return a log level based on the input
+        """return a log level based on the input. This
+        function is really a utility function for if are using a CLI where
+        the verbose argument equates to an integer (Ex: -v=1, -vv=2). This
+        function helps to convert those integers into the actual logging
+        level
 
         Parameters
         ----------
@@ -311,6 +330,10 @@ class ModifiedLogger(logging.getLoggerClass()):
         logger = logging.getLogger(logger_name)
 
         return logger
+
+    def bind(self, context: dict) -> ModifiedLogAdapter:
+
+        return ModifiedLogAdapter(self, context)
 
 
 logging.setLoggerClass(ModifiedLogger)
